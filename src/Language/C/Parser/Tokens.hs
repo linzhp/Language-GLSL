@@ -103,6 +103,9 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokRestrict !Position            -- `restrict'
                                                 -- (or `__restrict',
                                                 -- `__restrict__')
+	    | CTokHighp    !Position            -- `highp'
+	      		   			-- (or `__highp',
+						-- `__highp__')
             | CTokReturn   !Position            -- `return'
             | CTokShort    !Position            -- `short'
             | CTokSigned   !Position            -- `signed'
@@ -220,6 +223,7 @@ instance Pos CToken where
   posOf (CTokLabel    pos  ) = pos
   posOf (CTokRegister pos  ) = pos
   posOf (CTokRestrict pos  ) = pos
+  posOf (CTokHighp    pos  ) = pos
   posOf (CTokReturn   pos  ) = pos
   posOf (CTokShort    pos  ) = pos
   posOf (CTokSigned   pos  ) = pos
@@ -317,6 +321,7 @@ instance Show CToken where
   showsPrec _ (CTokLabel    _  ) = showString "__label__"
   showsPrec _ (CTokRegister _  ) = showString "register"
   showsPrec _ (CTokRestrict _  ) = showString "restrict"
+  showsPrec _ (CTokHighp    _  ) = showString "highp"
   showsPrec _ (CTokReturn   _  ) = showString "return"
   showsPrec _ (CTokShort    _  ) = showString "short"
   showsPrec _ (CTokSigned   _  ) = showString "signed"

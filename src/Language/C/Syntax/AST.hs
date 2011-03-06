@@ -350,6 +350,7 @@ isSUEDef _ = False
 data CTypeQual = CConstQual NodeInfo
                | CVolatQual NodeInfo
                | CRestrQual NodeInfo
+               | CHighpQual NodeInfo
                | CInlineQual NodeInfo
                | CAttrQual  CAttr
                deriving (Data,Typeable {-! CNode !-})
@@ -661,6 +662,7 @@ instance CNode CTypeQual
     where nodeInfo (CConstQual nodeinfo) = nodeinfo
           nodeInfo (CVolatQual nodeinfo) = nodeinfo
           nodeInfo (CRestrQual nodeinfo) = nodeinfo
+	  nodeInfo (CHighpQual nodeinfo) = nodeinfo
           nodeInfo (CInlineQual nodeinfo) = nodeinfo
           nodeInfo (CAttrQual d) = nodeInfo d
 instance Pos CTypeQual

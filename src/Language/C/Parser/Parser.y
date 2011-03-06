@@ -207,6 +207,7 @@ long		{ CTokLong	_ }
 "__label__"	{ CTokLabel	_ }
 register	{ CTokRegister	_ }
 restrict	{ CTokRestrict	_ }
+highp           { CTokHighp     _ }
 return		{ CTokReturn	_ }
 short		{ CTokShort	_ }
 signed		{ CTokSigned	_ }
@@ -550,7 +551,7 @@ sides doesn't matter.
 ---------------------------------------------------------------------------------------------------------------
 attr                       :-   __attribute__((..))
 storage_class              :-   typedef | extern | static | auto | register | __thread
-type_qualifier             :-   const | volatile | restrict | inline
+type_qualifier             :-   const | volatile | restrict | inline | highp
 type_qualifier_list        :-   type_qualifier+
 
 declaration_qualifier      :-   storage_class | type_qualifier
@@ -1196,9 +1197,10 @@ type_qualifier
   | volatile		{% withNodeInfo $1 $ CVolatQual }
   | restrict		{% withNodeInfo $1 $ CRestrQual }
   | inline		{% withNodeInfo $1 $ CInlineQual }
+  | highp               {% withNodeInfo $1 $ CHighpQual }
 --  | attribute		{% withNodeInfo $1 $ CAttrQual }
 
--- a list containing at least one type_qualifier (const, volatile, restrict, inline)
+-- a list containing at least one type_qualifier (const, volatile, restrict, inline, highp)
 --    and additionally CAttrs
 type_qualifier_list :: { Reversed [CTypeQual] }
 type_qualifier_list

@@ -251,6 +251,7 @@ instance Pretty CTypeQual where
     pretty (CConstQual _) = text "const"
     pretty (CVolatQual _) = text "volatile"
     pretty (CRestrQual _) = text "__restrict"
+    pretty (CHighpQual _) = text "highp"
     pretty (CInlineQual _) = text "inline"
     pretty (CAttrQual a)  = attrlistP [a]
 
