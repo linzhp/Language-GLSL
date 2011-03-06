@@ -131,7 +131,7 @@ import Language.C.Syntax
 %monad { P } { >>= } { return }
 %lexer { lexC } { CTokEof }
 
-%expect 1
+
 
 %token
 
@@ -1491,9 +1491,8 @@ identifier_list
 --
 type_name :: { CDecl }
 type_name
-  :  type_specifier
-  	{% withNodeInfo $1 $ CDecl $1 [] }
-
+  : unary_type_name
+    {$1}
   |  type_specifier abstract_declarator
   	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
@@ -1502,6 +1501,11 @@ type_name
 
   |  type_qualifier_list abstract_declarator
   	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1) [(Just (reverseDeclr $2), Nothing, Nothing)] }
+
+unary_type_name::{ CDecl }
+  :  type_specifier
+  	{% withNodeInfo $1 $ CDecl $1 [] }
+
 
 -- parse C abstract declarator (C99 6.7.6)
 --
@@ -1739,6 +1743,8 @@ postfix_expression
   | '(' type_name ')' '{' initializer_list ',' '}'
   	{% withNodeInfo $4 $ CCompoundLit $2 (reverse $5) }
 
+  | unary_type_name '(' argument_expression_list ')'
+    {% withNodeInfo $2 $ CConstructor $1 (reverse $3) }
 
 argument_expression_list :: { Reversed [CExpr] }
 argument_expression_list

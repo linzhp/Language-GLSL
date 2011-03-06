@@ -514,6 +514,9 @@ data CExpr = CComma       [CExpr]       -- comma expression list, n >= 2
            | CStatExpr    CStat NodeInfo  -- ^ GNU C compound statement as expr
            | CLabAddrExpr Ident NodeInfo  -- ^ GNU C address of label
            | CBuiltinExpr CBuiltin        -- ^ builtin expressions, see 'CBuiltin'
+           | CConstructor CDecl
+                          [CExpr]
+                          NodeInfo
            deriving (Data,Typeable {-! CNode !-})
 
 
