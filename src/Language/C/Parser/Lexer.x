@@ -329,6 +329,8 @@ idkwtok ('_':'_':'b':'u':'i':'l':'t':'i':'n':'_':rest)
         | rest == "offsetof"           = tok (CTokGnuC GnuCOffsetof)
         | rest == "types_compatible_p" = tok (CTokGnuC GnuCTyCompat)
 
+idkwtok ('v':'e':'c':'2':[])             = tok CTokVec2
+
 idkwtok cs = \pos -> do
   name <- getNewName
   let ident = mkIdent pos cs name

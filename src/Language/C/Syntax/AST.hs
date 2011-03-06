@@ -334,6 +334,7 @@ data CTypeSpec = CVoidType    NodeInfo
                | CTypeDef     Ident        NodeInfo  -- ^ Typedef name
                | CTypeOfExpr  CExpr        NodeInfo  -- ^ @typeof(expr)@
                | CTypeOfType  CDecl        NodeInfo  -- ^ @typeof(type)@
+               | CVec2Type    NodeInfo
                deriving (Data,Typeable {-! CNode !-})
 
 -- | returns @True@ if the given typespec is a struct, union or enum /definition/
@@ -652,6 +653,7 @@ instance CNode CTypeSpec
           nodeInfo (CTypeDef _ nodeinfo) = nodeinfo
           nodeInfo (CTypeOfExpr _ nodeinfo) = nodeinfo
           nodeInfo (CTypeOfType _ nodeinfo) = nodeinfo
+          nodeInfo (CVec2Type nodeinfo) = nodeinfo
 instance Pos CTypeSpec
     where posOf x = posOfNode (nodeInfo x)
 

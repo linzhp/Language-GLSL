@@ -237,6 +237,8 @@ tyident		{ CTokTyIdent _ $$ }		-- `typedef-name' identifier
 "__builtin_offsetof"		{ CTokGnuC GnuCOffsetof _ }
 "__builtin_types_compatible_p"	{ CTokGnuC GnuCTyCompat _ }
 
+vec2		{CTokVec2	_}
+
 %%
 
 
@@ -836,6 +838,7 @@ basic_type_name
   | unsigned			{% withNodeInfo $1 $ CUnsigType }
   | "_Bool"			{% withNodeInfo $1 $ CBoolType }
   | "_Complex"			{% withNodeInfo $1 $ CComplexType }
+  | vec2			{% withNodeInfo $1 $ CVec2Type }
 
 
 -- A mixture of type qualifiers, storage class and basic type names in any
@@ -1193,6 +1196,7 @@ type_qualifier
   | volatile		{% withNodeInfo $1 $ CVolatQual }
   | restrict		{% withNodeInfo $1 $ CRestrQual }
   | inline		{% withNodeInfo $1 $ CInlineQual }
+--  | attribute		{% withNodeInfo $1 $ CAttrQual }
 
 -- a list containing at least one type_qualifier (const, volatile, restrict, inline)
 --    and additionally CAttrs

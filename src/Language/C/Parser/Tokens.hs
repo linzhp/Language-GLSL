@@ -132,6 +132,8 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokTyIdent  !Position !Ident     -- `typedef-name' identifier
             | CTokGnuC !GnuCTok !Position       -- special GNU C tokens
             | CTokEof                           -- end of file
+	      -- tokens in GLSL
+            | CTokVec2	   !Position            -- `vec2'
 
 -- special tokens used in GNU C extensions to ANSI C
 --
@@ -142,6 +144,8 @@ data GnuCTok = GnuCAttrTok              -- `__attribute__'
              | GnuCTyCompat             -- `__builtin_types_compatible_p'
              | GnuCComplexReal          -- `__real__'
              | GnuCComplexImag          -- `__imag__'
+
+
 
 instance Pos CToken where
   posOf (CTokLParen   pos  ) = pos
@@ -239,6 +243,7 @@ instance Pos CToken where
   posOf (CTokTyIdent  pos _) = pos
   posOf (CTokGnuC   _ pos  ) = pos
   posOf CTokEof = error "tokenPos: Eof"
+  posOf (CTokVec2      pos  ) = pos
 instance Show CToken where
   showsPrec _ (CTokLParen   _  ) = showString "("
   showsPrec _ (CTokRParen   _  ) = showString ")"
@@ -341,4 +346,5 @@ instance Show CToken where
   showsPrec _ (CTokGnuC GnuCOffsetof _) = showString "__builtin_offsetof"
   showsPrec _ (CTokGnuC GnuCTyCompat _) = showString "__builtin_types_compatible_p"
   showsPrec _ CTokEof = error "show CToken : CTokEof"
+  showsPrec _ (CTokVec2      _  ) = showString "vec2"
 
