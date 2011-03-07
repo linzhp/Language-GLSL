@@ -333,6 +333,8 @@ idkwtok ('_':'_':'b':'u':'i':'l':'t':'i':'n':'_':rest)
         | rest == "types_compatible_p" = tok (CTokGnuC GnuCTyCompat)
 
 idkwtok ('v':'e':'c':'2':[])             = tok CTokVec2
+idkwtok ('a':'t':'t':'r':'i':'b':'u':'t':'e':[])             = tok CTokAttribute
+
 
 idkwtok cs = \pos -> do
   name <- getNewName

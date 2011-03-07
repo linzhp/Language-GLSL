@@ -103,7 +103,7 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokRestrict !Position            -- `restrict'
                                                 -- (or `__restrict',
                                                 -- `__restrict__')
-	    | CTokHighp    !Position            -- `highp'
+            | CTokHighp    !Position            -- `highp'
 	      		   			-- (or `__highp',
 						-- `__highp__')
             | CTokReturn   !Position            -- `return'
@@ -137,6 +137,7 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokEof                           -- end of file
 	      -- tokens in GLSL
             | CTokVec2	   !Position            -- `vec2'
+            | CTokAttribute !Position          -- `attribute'
 
 -- special tokens used in GNU C extensions to ANSI C
 --
@@ -248,6 +249,7 @@ instance Pos CToken where
   posOf (CTokGnuC   _ pos  ) = pos
   posOf CTokEof = error "tokenPos: Eof"
   posOf (CTokVec2      pos  ) = pos
+  posOf (CTokAttribute pos  ) = pos
 instance Show CToken where
   showsPrec _ (CTokLParen   _  ) = showString "("
   showsPrec _ (CTokRParen   _  ) = showString ")"
@@ -352,4 +354,5 @@ instance Show CToken where
   showsPrec _ (CTokGnuC GnuCTyCompat _) = showString "__builtin_types_compatible_p"
   showsPrec _ CTokEof = error "show CToken : CTokEof"
   showsPrec _ (CTokVec2      _  ) = showString "vec2"
+  showsPrec _ (CTokAttribute    _  ) = showString "attribute"
 

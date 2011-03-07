@@ -297,9 +297,6 @@ function_definition
   :                            function_declarator compound_statement
   	{% leaveScope >> (withNodeInfo $1 $ CFunDef [] $1 [] $2) }
 
-  |                      attrs function_declarator compound_statement
-    {% leaveScope >> (withNodeInfo $2 $ CFunDef (liftCAttrs $1) $2 [] $3) }
-
   | declaration_specifier      function_declarator compound_statement
 	  {% leaveScope >> (withNodeInfo $1 $ CFunDef $1 $2 [] $3) }
 
@@ -312,16 +309,10 @@ function_definition
   | type_qualifier_list   function_declarator compound_statement
 	  {% leaveScope >> (withNodeInfo $1 $ CFunDef (liftTypeQuals $1) $2 [] $3) }
 
-  | type_qualifier_list   attrs function_declarator compound_statement
-	  {% leaveScope >> (withNodeInfo $1 $ CFunDef (liftTypeQuals $1 ++ liftCAttrs $2) $3 [] $4) }
-
   -- old function declarators
 
   |                            function_declarator_old declaration_list compound_statement
   	{% withNodeInfo $1 $ CFunDef [] $1 (reverse $2) $3 }
-
-  |                      attrs function_declarator_old declaration_list compound_statement
-  	{% withNodeInfo $2 $ CFunDef (liftCAttrs $1) $2 (reverse $3) $4 }
 
   | declaration_specifier      function_declarator_old declaration_list compound_statement
   	{% withNodeInfo $1 $ CFunDef $1 $2 (reverse $3) $4 }
@@ -334,9 +325,6 @@ function_definition
 
   | type_qualifier_list   function_declarator_old declaration_list compound_statement
   	{% withNodeInfo $1 $ CFunDef (liftTypeQuals $1) $2 (reverse $3) $4 }
-
-  | type_qualifier_list attrs  function_declarator_old declaration_list compound_statement
-  	{% withNodeInfo $1 $ CFunDef (liftTypeQuals $1  ++ liftCAttrs $2) $3 (reverse $4) $5 }
 
 -- Read declarator and put function
 function_declarator :: { CDeclr }
@@ -424,10 +412,6 @@ nested_function_definition
 
   | type_qualifier_list   function_declarator compound_statement
 	{% leaveScope >> (withNodeInfo $1 $ CFunDef (liftTypeQuals $1) $2 [] $3) }
-
-  | type_qualifier_list   attrs function_declarator compound_statement
-	{% leaveScope >> (withNodeInfo $1 $ CFunDef (liftTypeQuals $1 ++ liftCAttrs $2) $3 [] $4) }
-
 
 label_declarations :: { Reversed [Ident] }
 label_declarations
@@ -693,19 +677,6 @@ default_declaring_list
            ; doDeclIdent declspecs declr
            ; withNodeInfo $1 $ CDecl declspecs [(Just (reverseDeclr declr), $4, Nothing)] }}
 
-  | type_qualifier_list attrs identifier_declarator asm_attrs_opt {-{}-} initializer_opt -- FIX 1600
-  	{% let declspecs = liftTypeQuals $1 in
-  	   do{ declr <- withAsmNameAttrs $4 $3
-           ; doDeclIdent declspecs declr
-           ; withNodeInfo $1 $ CDecl (declspecs ++ liftCAttrs $2) [(Just (reverseDeclr declr), $5, Nothing)] }}
-
-  -- GNU extension: __attribute__ as the only qualifier
-  | attrs identifier_declarator asm_attrs_opt {-{}-} initializer_opt
-    {% let declspecs = liftCAttrs $1 in
-       do{ declr <- withAsmNameAttrs $3 $2
-           ; doDeclIdent declspecs declr
-           ; withNodeInfo $1 $ CDecl declspecs [(Just (reverseDeclr declr), $4, Nothing)] }}
-
   | default_declaring_list ',' attrs_opt identifier_declarator asm_attrs_opt {-{}-} initializer_opt
   	{% case $1 of
              CDecl declspecs dies at -> do
@@ -775,20 +746,11 @@ declaration_qualifier_list
   : storage_class
   	{ singleton (CStorageSpec $1) }
 
-  | attrs storage_class
-  	{ reverseList (liftCAttrs $1) `snoc` (CStorageSpec $2) }
-
   | type_qualifier_list storage_class
   	{ rmap CTypeQual $1 `snoc` CStorageSpec $2 }
 
-  | type_qualifier_list attrs storage_class
-  	{ (rmap CTypeQual $1 `rappend` liftCAttrs $2) `snoc` CStorageSpec $3 }
-
   | declaration_qualifier_list declaration_qualifier
   	{ $1 `snoc` $2 }
-
-  | declaration_qualifier_list attr
-  	{ addTrailingAttrs $1 $2 }
 
 --
 -- declaration_qualifier :- storage_class | type_qualifier
@@ -865,9 +827,6 @@ basic_declaration_specifier
   | basic_declaration_specifier basic_type_name
   	{ $1 `snoc` CTypeSpec $2 }
 
-  | basic_declaration_specifier attr
-  	{ addTrailingAttrs $1 $2 }
-
 
 -- A mixture of type qualifiers and basic type names in any order, but
 -- containing at least one basic type name.
@@ -883,23 +842,14 @@ basic_type_specifier
   : basic_type_name
   	{ singleton (CTypeSpec $1) }
 
-  | attrs basic_type_name
-  	{ (reverseList $ liftCAttrs $1) `snoc` (CTypeSpec $2) }
-
   | type_qualifier_list basic_type_name
   	{ rmap CTypeQual $1 `snoc` CTypeSpec $2 }
-
-  | type_qualifier_list attrs basic_type_name
-  	{ rmap CTypeQual $1 `rappend` (liftCAttrs $2) `snoc` CTypeSpec $3 }
 
   | basic_type_specifier type_qualifier
   	{ $1 `snoc` CTypeQual $2 }
 
   | basic_type_specifier basic_type_name
   	{ $1 `snoc` CTypeSpec $2 }
-
-  | basic_type_specifier attr
-     { addTrailingAttrs $1 $2 }
 
 
 -- A named or anonymous struct, union or enum type along with at least one
@@ -919,10 +869,6 @@ sue_declaration_specifier
   | sue_declaration_specifier declaration_qualifier
   	{ $1 `snoc` $2 }
   	
-  | sue_declaration_specifier attr
-  	{ addTrailingAttrs $1 $2 }
-
-
 -- A struct, union or enum type (named or anonymous) with optional leading and
 -- trailing type qualifiers.
 --
@@ -937,21 +883,12 @@ sue_type_specifier
   : elaborated_type_name
   	{ singleton (CTypeSpec $1) }
 
-  | attrs elaborated_type_name
-  	{ (reverseList $ liftCAttrs $1) `snoc` (CTypeSpec $2) }
-
   | type_qualifier_list elaborated_type_name
   	{ rmap CTypeQual $1 `snoc` CTypeSpec $2 }
-
-  | type_qualifier_list attrs elaborated_type_name
-  	{ rmap CTypeQual  $1 `rappend` (liftCAttrs $2) `snoc` CTypeSpec $3 }
 
   | sue_type_specifier type_qualifier
   	{ $1 `snoc` CTypeQual $2 }
   	
-  | sue_type_specifier attr
-    { addTrailingAttrs $1 $2 }
-
 -- A typedef'ed type identifier with at least one storage qualifier and any
 -- number of type qualifiers
 --
@@ -977,9 +914,6 @@ typedef_declaration_specifier
 
   | typedef_declaration_specifier declaration_qualifier
   	{ $1 `snoc` $2 }
-
-  | typedef_declaration_specifier attr
-  	{ addTrailingAttrs $1 $2 }
 
 
 -- typedef'ed type identifier with optional leading and trailing type qualifiers
@@ -1007,30 +941,8 @@ typedef_type_specifier
   | type_qualifier_list typeof '(' type_name ')'
   	{% withNodeInfo $2 $ \at -> rmap CTypeQual  $1 `snoc` CTypeSpec (CTypeOfType $4 at) }
 
-  -- repeat with attrs (this could be easier if type qualifier list wouldn't allow leading attributes)
-  | attrs tyident
-  	{% withNodeInfo $2 $ \at -> reverseList (liftCAttrs $1) `snoc` (CTypeSpec (CTypeDef $2 at)) }
-
-  | attrs typeof '(' expression ')'
-  	{% withNodeInfo $2 $ \at -> reverseList (liftCAttrs $1) `snoc`  (CTypeSpec (CTypeOfExpr $4 at)) }
-
-  | attrs typeof '(' type_name ')'
-  	{% withNodeInfo $2 $ \at -> reverseList (liftCAttrs $1) `snoc`  (CTypeSpec (CTypeOfType $4 at)) }
-
-  | type_qualifier_list attrs tyident
-  	{% withNodeInfo $2 $ \at -> rmap CTypeQual  $1 `rappend` (liftCAttrs $2) `snoc` CTypeSpec (CTypeDef $3 at) }
-
-  | type_qualifier_list attrs typeof '(' expression ')'
-  	{% withNodeInfo $2 $ \at -> rmap CTypeQual  $1 `rappend` (liftCAttrs $2) `snoc` CTypeSpec (CTypeOfExpr $5 at) }
-
-  | type_qualifier_list attrs typeof '(' type_name ')'
-  	{% withNodeInfo $2 $ \at -> rmap CTypeQual  $1 `rappend` (liftCAttrs $2) `snoc` CTypeSpec (CTypeOfType $5 at) }
-
   | typedef_type_specifier type_qualifier
   	{ $1 `snoc` CTypeQual $2 }
-
-  | typedef_type_specifier attr
-  	{ addTrailingAttrs $1 $2 }
 
 
 -- A named or anonymous struct, union or enum type.
@@ -1096,9 +1008,6 @@ struct_default_declaring_list
   : type_qualifier_list attrs_opt struct_identifier_declarator
   	{% withNodeInfo $1 $ case $3 of (d,s) -> CDecl (liftTypeQuals $1 ++ liftCAttrs $2) [(d,Nothing,s)] }
 
-  -- GNU extension: __attribute__ as only type qualifier
-  | attrs struct_identifier_declarator
-    {% withNodeInfo $1 $ case $2 of (d,s) -> CDecl (liftCAttrs $1) [(d,Nothing,s)] }
   -- attrs_opt apply to the declared object
   | struct_default_declaring_list ',' attrs_opt struct_identifier_declarator
   	{ case $1 of
@@ -1206,7 +1115,6 @@ type_qualifier_list :: { Reversed [CTypeQual] }
 type_qualifier_list
   : attrs_opt type_qualifier	             { reverseList (map CAttrQual $1) `snoc` $2 }
   | type_qualifier_list type_qualifier	     { $1 `snoc` $2 }
-  | type_qualifier_list attrs type_qualifier { ($1 `rappend` map CAttrQual $2) `snoc` $3}	
 
 -- parse C declarator (C99 6.7.5)
 --
@@ -1266,14 +1174,8 @@ clean_typedef_declarator
   | '*' parameter_typedef_declarator
   	{% withNodeInfo $1 $ ptrDeclr $2 [] }
 
-  | '*' attrs parameter_typedef_declarator
-  	{% withAttribute $1 $2 $ ptrDeclr $3 [] }
-
   | '*' type_qualifier_list  parameter_typedef_declarator
   	{% withNodeInfo $1 $ ptrDeclr $3 (reverse $2) }
-
-  | '*' type_qualifier_list attrs parameter_typedef_declarator
-  	{% withAttribute $1 $3 $ ptrDeclr $4 (reverse $2)  }
 
 -- clean_postfix_typedef_declarator :- ( attrs? clean_typedef_declarator ) declarator_postfix?
 --
@@ -1281,9 +1183,6 @@ clean_postfix_typedef_declarator :: { CDeclrR }
 clean_postfix_typedef_declarator
   : '(' clean_typedef_declarator ')'						              { $2 }
   | '(' clean_typedef_declarator ')' postfixing_abstract_declarator		  { $4 $2 }
-  | '(' attrs clean_typedef_declarator ')'	                              { appendDeclrAttrs $2 $3 }
-  | '(' attrs clean_typedef_declarator ')' postfixing_abstract_declarator { appendDeclrAttrs $2 ($5 $3) }
-
 
 -- The following have a redundant '(' placed
 -- immediately to the left of the tyident
@@ -1299,16 +1198,11 @@ paren_typedef_declarator
 
   | '*' type_qualifier_list '(' simple_paren_typedef_declarator ')'
   	{% withNodeInfo $1 $ ptrDeclr $4 (reverse $2) }
-  | '*' type_qualifier_list attrs '(' simple_paren_typedef_declarator ')'
-  	{% withAttribute $1 $3 $ ptrDeclr $5 (reverse $2)  }
-
   | '*' paren_typedef_declarator
   	{% withNodeInfo $1 $ ptrDeclr $2 [] }
 
   | '*' type_qualifier_list paren_typedef_declarator
   	{% withNodeInfo $1 $ ptrDeclr $3 (reverse $2) }
-  | '*' type_qualifier_list attrs paren_typedef_declarator
-  	{% withAttribute $1 $3 $ ptrDeclr $4 (reverse $2) }
 
 -- redundant paren to left of tname
 paren_postfix_typedef_declarator :: { CDeclrR }
@@ -1354,14 +1248,8 @@ unary_identifier_declarator
   | '*' identifier_declarator
   	{% withNodeInfo $1 $ ptrDeclr $2 [] }
 
-  | '*' attrs identifier_declarator
-  	{% withAttribute $1 $2 $ ptrDeclr $3 [] }
-
   | '*' type_qualifier_list identifier_declarator
   	{% withNodeInfo $1 $ ptrDeclr $3 (reverse $2) }
-
-  | '*' type_qualifier_list attrs identifier_declarator
-  	{% withAttribute $1 $3 $ ptrDeclr $4 (reverse $2) }
 
 postfix_identifier_declarator :: { CDeclrR }
 postfix_identifier_declarator
@@ -1374,12 +1262,6 @@ postfix_identifier_declarator
    | '(' unary_identifier_declarator ')' postfixing_abstract_declarator
    	{ $4 $2 }
 
-   | '(' attrs unary_identifier_declarator ')'
-     { appendDeclrAttrs $2 $3 }
-
-   | '(' attrs unary_identifier_declarator ')' postfixing_abstract_declarator
-     { appendDeclrAttrs $2 ($5 $3) }
-
 
 -- just an identifier in any number of nested parenthesis
 paren_identifier_declarator :: { CDeclrR }
@@ -1389,9 +1271,6 @@ paren_identifier_declarator
 
   | '(' paren_identifier_declarator ')'
   	{ $2 }
-
-  | '(' attrs paren_identifier_declarator ')'
-  	{ appendDeclrAttrs $2 $3 }
 
 function_declarator_old :: { CDeclr }
 function_declarator_old
@@ -1471,8 +1350,6 @@ parameter_declaration
 
   | type_qualifier_list
   	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1) [] }
-  | type_qualifier_list attr
-  	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1 ++ liftCAttrs $2) [] }
 
   | type_qualifier_list abstract_declarator
   	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1) [(Just (reverseDeclr $2), Nothing, Nothing)] }
@@ -1495,9 +1372,6 @@ type_name
     {$1}
   |  type_specifier abstract_declarator
   	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $2), Nothing, Nothing)] }
-
-  |  type_qualifier_list attr
-  	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1 ++ liftCAttrs $2) [] }
 
   |  type_qualifier_list abstract_declarator
   	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1) [(Just (reverseDeclr $2), Nothing, Nothing)] }
@@ -1553,14 +1427,8 @@ postfix_array_abstract_declarator
   : '[' assignment_expression_opt ']'
   	{% withNodeInfo $1 $ \at declr -> arrDeclr declr [] False False $2 at }
 
-  | '[' attrs assignment_expression_opt ']'
-  	{% withAttributePF $1 $2 $ \at declr -> arrDeclr declr [] False False $3 at }
-
   | '[' type_qualifier_list assignment_expression_opt ']'
   	{% withNodeInfo $1 $ \at declr -> arrDeclr declr (reverse $2) False False $3 at }
-
-  | '[' type_qualifier_list attrs assignment_expression_opt ']'
-  	{% withAttributePF $1 $3 $ \at declr -> arrDeclr declr (reverse $2) False False $4 at }
 
   | '[' static attrs_opt assignment_expression ']'
   	{% withAttributePF $1 $3 $ \at declr -> arrDeclr declr [] False True (Just $4) at }
@@ -1573,13 +1441,8 @@ postfix_array_abstract_declarator
 
   | '[' '*' attrs_opt ']'
   	{% withAttributePF $1 $3 $ \at declr -> arrDeclr declr [] True False Nothing at }
-  | '[' attrs '*' attrs_opt ']'
-  	{% withAttributePF $1 ($2 ++ $4) $ \at declr -> arrDeclr declr [] True False Nothing at }
-
   | '[' type_qualifier_list '*' attrs_opt ']'
   	{% withAttributePF $1 $4 $ \at declr -> arrDeclr declr (reverse $2) True False Nothing at }
-  | '[' type_qualifier_list attrs '*' attrs_opt ']'
-  	{% withAttributePF $1 ($3 ++ $5) $ \at declr -> arrDeclr declr (reverse $2) True False Nothing at }
 
 unary_abstract_declarator :: { CDeclrR }
 unary_abstract_declarator
@@ -1595,11 +1458,6 @@ unary_abstract_declarator
   | '*' type_qualifier_list abstract_declarator
   	{% withNodeInfo $1 $ ptrDeclr $3 (reverse $2) }
 
-  | '*' attrs
-  	{% withAttribute $1 $2 $ ptrDeclr emptyDeclr [] }
-  | '*' attrs abstract_declarator
-  	{% withAttribute $1 $2 $ ptrDeclr $3 [] }
-
 -- postfix_ad starts with '(', postfixing with '(' or '[', unary_abstract starts with '*'
 postfix_abstract_declarator :: { CDeclrR }
 postfix_abstract_declarator
@@ -1608,12 +1466,6 @@ postfix_abstract_declarator
   | '(' postfixing_abstract_declarator ')'				{ $2 emptyDeclr }
   | '(' unary_abstract_declarator ')' postfixing_abstract_declarator	{ $4 $2 }
 
--- FIX 0700
-  | '(' attrs unary_abstract_declarator ')'				     	{ appendDeclrAttrs $2 $3 }
-  | '(' attrs postfix_abstract_declarator ')'					{ appendDeclrAttrs $2 $3 }
-  | '(' attrs postfixing_abstract_declarator ')'				{ appendDeclrAttrs $2 ($3 emptyDeclr) }
-  | '(' attrs unary_abstract_declarator ')' postfixing_abstract_declarator	{ appendDeclrAttrs $2 ($5 $3) }
-  | postfix_abstract_declarator attr						    { appendDeclrAttrs $2 $1 }
 
 
 -- parse C initializer (C99 6.7.8)
@@ -2039,41 +1891,6 @@ identifier :: { Ident }
 identifier
   : ident		{ $1 }
   | tyident		{ $1 }
-
-
--- parse GNU C attribute annotation
-attrs_opt ::	{ [CAttr] }
-attrs_opt
-  : {- empty -}						{ [] }
-  | attrs         				{ $1 }
-
--- GNU C attribute annotation
-attrs :: { [CAttr] }
-attrs
-  : attr						{ $1 }
-  | attrs attr	    { $1 ++ $2 }
-
-attr :: { [CAttr] }
-attr
-  : "__attribute__" '(' '(' attribute_list ')' ')'	{ reverse $4 }
-
-attribute_list :: { Reversed [CAttr] }
-  : attribute						          { case $1 of Nothing -> empty; Just attr -> singleton attr }
-  | attribute_list ',' attribute	{ (maybe id (flip snoc) $3) $1 }
-
-
-attribute :: { Maybe CAttr }
-attribute
-  : {- empty -}						         { Nothing }
-  | ident						               {% withNodeInfo $1 $ Just . CAttr $1  [] }
-  | const						               {% withNodeInfo $1 $ Just . CAttr (internalIdent "const") [] }
-  | ident '(' attribute_params ')' {% withNodeInfo $1 $ Just . CAttr $1 (reverse $3) }
-  | ident '(' ')'					         {% withNodeInfo $1 $ Just . CAttr $1 [] }
-
-attribute_params :: { Reversed [CExpr] }
-attribute_params
-  : constant_expression					              { singleton $1 }
-  | attribute_params ',' constant_expression	{ $1 `snoc` $3 }
 
 
 {

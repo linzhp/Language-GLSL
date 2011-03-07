@@ -254,6 +254,7 @@ instance Pretty CTypeQual where
     pretty (CHighpQual _) = text "highp"
     pretty (CInlineQual _) = text "inline"
     pretty (CAttrQual a)  = attrlistP [a]
+    pretty (CAttributeQual _) = text "attribute"
 
 instance Pretty CStructUnion where
     pretty (CStruct tag ident Nothing cattrs _) = pretty tag <+> attrlistP cattrs <+> maybeP identP ident
