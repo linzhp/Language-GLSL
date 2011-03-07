@@ -239,6 +239,7 @@ tyident		{ CTokTyIdent _ $$ }		-- `typedef-name' identifier
 "__builtin_types_compatible_p"	{ CTokGnuC GnuCTyCompat _ }
 
 vec2		{CTokVec2	_}
+attribute   {CTokAttribute _}
 
 %%
 
@@ -355,7 +356,7 @@ statement
 --
 labeled_statement :: { CStat }
 labeled_statement
-  : identifier ':' attrs_opt statement		{% withNodeInfo $2 $ CLabel $1 $4 $3 }
+  : identifier ':' statement		{% withNodeInfo $2 $ CLabel $1 $3 []}
   | case constant_expression ':' statement	{% withNodeInfo $1 $ CCase $2 $4 }
   | default ':' statement			{% withNodeInfo $1 $ CDefault $3 }
   | case constant_expression "..." constant_expression ':' statement
@@ -535,7 +536,7 @@ sides doesn't matter.
 ---------------------------------------------------------------------------------------------------------------
 attr                       :-   __attribute__((..))
 storage_class              :-   typedef | extern | static | auto | register | __thread
-type_qualifier             :-   const | volatile | restrict | inline | highp
+type_qualifier             :-   const | volatile | restrict | inline | highp | attribute
 type_qualifier_list        :-   type_qualifier+
 
 declaration_qualifier      :-   storage_class | type_qualifier
@@ -677,18 +678,19 @@ default_declaring_list
            ; doDeclIdent declspecs declr
            ; withNodeInfo $1 $ CDecl declspecs [(Just (reverseDeclr declr), $4, Nothing)] }}
 
-  | default_declaring_list ',' attrs_opt identifier_declarator asm_attrs_opt {-{}-} initializer_opt
+  | default_declaring_list ',' identifier_declarator asm_attrs_opt {-{}-} initializer_opt
   	{% case $1 of
              CDecl declspecs dies at -> do
-               declr <- withAsmNameAttrs (fst $5, snd $5 ++ $3) $4
+               declr <- withAsmNameAttrs (fst $4, snd $4) $3
                doDeclIdent declspecs declr
-               return (CDecl declspecs ((Just (reverseDeclr declr), $6, Nothing) : dies) at) }
+               return (CDecl declspecs ((Just (reverseDeclr declr), $5, Nothing) : dies) at) }
+
 
 -- assembler, followed by attribute annotation
 asm_attrs_opt :: { (Maybe CStrLit, [CAttr]) }
 asm_attrs_opt
-  : asm_opt attrs_opt
-  { ($1,$2) }
+  : asm_opt
+  { ($1,[]) }
 
 --
 -- SUMMARY: declaring_list :- specifier* declarator asm_attrs initializer?
@@ -714,12 +716,12 @@ declaring_list
        withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr declr), $4, Nothing)] }
     }
 
-  | declaring_list ',' attrs_opt declarator asm_attrs_opt initializer_opt
+  | declaring_list ',' declarator asm_attrs_opt initializer_opt
   	{% case $1 of
              CDecl declspecs dies at -> do
-               declr <- withAsmNameAttrs (fst $5, snd $5 ++ $3) $4
+               declr <- withAsmNameAttrs (fst $4, snd $4) $3
                doDeclIdent declspecs declr
-               return (CDecl declspecs ((Just (reverseDeclr declr), $6, Nothing) : dies) at) }
+               return (CDecl declspecs ((Just (reverseDeclr declr), $5, Nothing) : dies) at) }
 
 
 -- parse C declaration specifiers (C99 6.7)
@@ -963,14 +965,14 @@ elaborated_type_name
 --
 struct_or_union_specifier :: { CStructUnion }
 struct_or_union_specifier
-  : struct_or_union attrs_opt identifier '{' struct_declaration_list  '}'
-  	{% withNodeInfo $1 $ CStruct (unL $1) (Just $3) (Just$ reverse $5) $2 }
+  : struct_or_union identifier '{' struct_declaration_list  '}'
+  	{% withNodeInfo $1 $ CStruct (unL $1) (Just $2) (Just$ reverse $4) [] }
 
-  | struct_or_union attrs_opt '{' struct_declaration_list  '}'
-  	{% withNodeInfo $1 $ CStruct (unL $1) Nothing   (Just$ reverse $4) $2 }
+  | struct_or_union '{' struct_declaration_list  '}'
+  	{% withNodeInfo $1 $ CStruct (unL $1) Nothing   (Just$ reverse $3) [] }
 
-  | struct_or_union attrs_opt identifier
-  	{% withNodeInfo $1 $ CStruct (unL $1) (Just $3) Nothing $2 }
+  | struct_or_union identifier
+  	{% withNodeInfo $1 $ CStruct (unL $1) (Just $2) Nothing [] }
 
 
 struct_or_union :: { Located CStructTag }
@@ -1005,15 +1007,15 @@ struct_declaration
 --  TODO: FIXME: AST doesn't allow recording attributes of unnamed struct members
 struct_default_declaring_list :: { CDecl }
 struct_default_declaring_list
-  : type_qualifier_list attrs_opt struct_identifier_declarator
-  	{% withNodeInfo $1 $ case $3 of (d,s) -> CDecl (liftTypeQuals $1 ++ liftCAttrs $2) [(d,Nothing,s)] }
+  : type_qualifier_list struct_identifier_declarator
+  	{% withNodeInfo $1 $ case $2 of (d,s) -> CDecl (liftTypeQuals $1) [(d,Nothing,s)] }
 
   -- attrs_opt apply to the declared object
-  | struct_default_declaring_list ',' attrs_opt struct_identifier_declarator
+  | struct_default_declaring_list ',' struct_identifier_declarator
   	{ case $1 of
             CDecl declspecs dies at ->
-              case $4 of
-                (Just d,s) -> CDecl declspecs ((Just $ appendObjAttrs $3 d,Nothing,s) : dies) at
+              case $3 of
+                (Just d,s) -> CDecl declspecs ((Just d,Nothing,s) : dies) at
                 (Nothing,s) -> CDecl declspecs ((Nothing,Nothing,s) : dies) at } -- FIXME
 
 -- * GNU extensions:
@@ -1021,14 +1023,14 @@ struct_default_declaring_list
 --     FIXME: cannot record attribute of unnamed field
 struct_declaring_list :: { CDecl }
 struct_declaring_list
-  : type_specifier struct_declarator attrs_opt
-  	{% withNodeInfo $1 $ case $2 of { (Just d,s)  -> CDecl $1 [(Just $! appendObjAttrs $3 d,Nothing,s)]
+  : type_specifier struct_declarator
+  	{% withNodeInfo $1 $ case $2 of { (Just d,s)  -> CDecl $1 [(Just d,Nothing,s)]
                                     ; (Nothing,s) -> CDecl $1 [(Nothing,Nothing,s)]  } } {- DO FIXME -}
-  | struct_declaring_list ',' attrs_opt struct_declarator attrs_opt
+  | struct_declaring_list ',' struct_declarator
   	{ case $1 of
             CDecl declspecs dies attr ->
-              case $4 of
-                (Just d,s) -> CDecl declspecs ((Just$ appendObjAttrs ($3++$5) d,Nothing,s) : dies) attr
+              case $3 of
+                (Just d,s) -> CDecl declspecs ((Just d,Nothing,s) : dies) attr
                 (Nothing,s) -> CDecl declspecs ((Nothing,Nothing,s) : dies) attr }
 
   -- FIXME: We're being far too liberal in the parsing here, we really want to just
@@ -1057,12 +1059,6 @@ struct_identifier_declarator
   : identifier_declarator				{ (Just (reverseDeclr $1), Nothing) }
   | ':' constant_expression				{ (Nothing, Just $2) }
   | identifier_declarator ':' constant_expression	{ (Just (reverseDeclr $1), Just $3) }
-  | struct_identifier_declarator attr
-    {  case $1 of {   (Nothing,expr) -> (Nothing,expr) {- FIXME -}
-                    ; (Just (CDeclr name derived asmname attrs node), bsz) ->
-                                        (Just (CDeclr name derived asmname (attrs++$2) node),bsz)
-                  }
-    }
 
 -- parse C enumeration declaration (C99 6.7.2.2)
 --
@@ -1071,20 +1067,20 @@ struct_identifier_declarator
 --
 enum_specifier :: { CEnum }
 enum_specifier
-  : enum attrs_opt '{' enumerator_list '}'
-  	{% withNodeInfo $1 $ CEnum Nothing   (Just$ reverse $4) $2 }
+  : enum '{' enumerator_list '}'
+  	{% withNodeInfo $1 $ CEnum Nothing   (Just$ reverse $3) [] }
 
-  | enum attrs_opt '{' enumerator_list ',' '}'
-  	{% withNodeInfo $1 $ CEnum Nothing   (Just$ reverse $4) $2 }
+  | enum '{' enumerator_list ',' '}'
+  	{% withNodeInfo $1 $ CEnum Nothing   (Just$ reverse $3) [] }
 
-  | enum attrs_opt identifier '{' enumerator_list '}'
-  	{% withNodeInfo $1 $ CEnum (Just $3) (Just$ reverse $5) $2 }
+  | enum identifier '{' enumerator_list '}'
+  	{% withNodeInfo $1 $ CEnum (Just $2) (Just$ reverse $4) [] }
 
-  | enum attrs_opt identifier '{' enumerator_list ',' '}'
-  	{% withNodeInfo $1 $ CEnum (Just $3) (Just$ reverse $5) $2 }
+  | enum identifier '{' enumerator_list ',' '}'
+  	{% withNodeInfo $1 $ CEnum (Just $2) (Just$ reverse $4) [] }
 
-  | enum attrs_opt identifier
-  	{% withNodeInfo $1 $ CEnum (Just $3) Nothing $2           }
+  | enum identifier
+  	{% withNodeInfo $1 $ CEnum (Just $2) Nothing []           }
 
 enumerator_list :: { Reversed [(Ident, Maybe CExpr)] }
 enumerator_list
@@ -1107,13 +1103,13 @@ type_qualifier
   | restrict		{% withNodeInfo $1 $ CRestrQual }
   | inline		{% withNodeInfo $1 $ CInlineQual }
   | highp               {% withNodeInfo $1 $ CHighpQual }
---  | attribute		{% withNodeInfo $1 $ CAttrQual }
+  | attribute		{% withNodeInfo $1 $ CAttributeQual }
 
--- a list containing at least one type_qualifier (const, volatile, restrict, inline, highp)
+-- a list containing at least one type_qualifier (const, volatile, restrict, inline, highp, attribute)
 --    and additionally CAttrs
 type_qualifier_list :: { Reversed [CTypeQual] }
 type_qualifier_list
-  : attrs_opt type_qualifier	             { reverseList (map CAttrQual $1) `snoc` $2 }
+  : type_qualifier	             { reverseList [] `snoc` $1 }
   | type_qualifier_list type_qualifier	     { $1 `snoc` $2 }
 
 -- parse C declarator (C99 6.7.5)
@@ -1321,11 +1317,11 @@ parameter_declaration
   | declaration_specifier abstract_declarator
   	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
-  | declaration_specifier identifier_declarator attrs_opt
-  	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $! appendDeclrAttrs $3 $2), Nothing, Nothing)] }
+  | declaration_specifier identifier_declarator
+  	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
-  | declaration_specifier parameter_typedef_declarator attrs_opt
-  	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $! appendDeclrAttrs $3 $2), Nothing, Nothing)] }
+  | declaration_specifier parameter_typedef_declarator
+  	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
   | declaration_qualifier_list
   	{% withNodeInfo $1 $ CDecl (reverse $1) [] }
@@ -1333,8 +1329,8 @@ parameter_declaration
   | declaration_qualifier_list abstract_declarator
   	{% withNodeInfo $1 $ CDecl (reverse $1) [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
-  | declaration_qualifier_list identifier_declarator attrs_opt
-  	{% withNodeInfo $1 $ CDecl (reverse $1) [(Just (reverseDeclr $! appendDeclrAttrs $3 $2), Nothing, Nothing)] }
+  | declaration_qualifier_list identifier_declarator
+  	{% withNodeInfo $1 $ CDecl (reverse $1) [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
   | type_specifier
   	{% withNodeInfo $1 $ CDecl $1 [] }
@@ -1342,11 +1338,11 @@ parameter_declaration
   | type_specifier abstract_declarator
   	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
-  | type_specifier identifier_declarator attrs_opt
-  	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $! appendDeclrAttrs $3 $2), Nothing, Nothing)] }
+  | type_specifier identifier_declarator
+  	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
-  | type_specifier parameter_typedef_declarator attrs_opt
-  	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $! appendDeclrAttrs $3 $2), Nothing, Nothing)] }
+  | type_specifier parameter_typedef_declarator
+  	{% withNodeInfo $1 $ CDecl $1 [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
   | type_qualifier_list
   	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1) [] }
@@ -1354,8 +1350,8 @@ parameter_declaration
   | type_qualifier_list abstract_declarator
   	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1) [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
-  | type_qualifier_list identifier_declarator attrs_opt
-  	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1) [(Just (reverseDeclr$ appendDeclrAttrs $3 $2), Nothing, Nothing)] }
+  | type_qualifier_list identifier_declarator
+  	{% withNodeInfo $1 $ CDecl (liftTypeQuals $1) [(Just (reverseDeclr $2), Nothing, Nothing)] }
 
 
 identifier_list :: { Reversed [Ident] }
@@ -1430,27 +1426,27 @@ postfix_array_abstract_declarator
   | '[' type_qualifier_list assignment_expression_opt ']'
   	{% withNodeInfo $1 $ \at declr -> arrDeclr declr (reverse $2) False False $3 at }
 
-  | '[' static attrs_opt assignment_expression ']'
-  	{% withAttributePF $1 $3 $ \at declr -> arrDeclr declr [] False True (Just $4) at }
+  | '[' static assignment_expression ']'
+  	{% withAttributePF $1 [] $ \at declr -> arrDeclr declr [] False True (Just $3) at }
 
-  | '[' static type_qualifier_list attrs_opt assignment_expression ']'
-  	{% withAttributePF $1 $4 $ \at declr -> arrDeclr declr (reverse $3) False True (Just $5) at }
+  | '[' static type_qualifier_list assignment_expression ']'
+  	{% withAttributePF $1 [] $ \at declr -> arrDeclr declr (reverse $3) False True (Just $4) at }
 
-  | '[' type_qualifier_list attrs_opt static attrs_opt assignment_expression ']'
-  	{% withAttributePF $1 ($3 ++ $5) $ \at declr -> arrDeclr declr (reverse $2) False True  (Just $6) at }
+  | '[' type_qualifier_list static assignment_expression ']'
+  	{% withAttributePF $1 [] $ \at declr -> arrDeclr declr (reverse $2) False True  (Just $4) at }
 
-  | '[' '*' attrs_opt ']'
-  	{% withAttributePF $1 $3 $ \at declr -> arrDeclr declr [] True False Nothing at }
-  | '[' type_qualifier_list '*' attrs_opt ']'
-  	{% withAttributePF $1 $4 $ \at declr -> arrDeclr declr (reverse $2) True False Nothing at }
+  | '[' '*' ']'
+  	{% withAttributePF $1 [] $ \at declr -> arrDeclr declr [] True False Nothing at }
+  | '[' type_qualifier_list '*' ']'
+  	{% withAttributePF $1 [] $ \at declr -> arrDeclr declr (reverse $2) True False Nothing at }
 
 unary_abstract_declarator :: { CDeclrR }
 unary_abstract_declarator
   : '*'
   	{% withNodeInfo $1 $ ptrDeclr emptyDeclr [] }
 
-  | '*' type_qualifier_list attrs_opt
-  	{% withAttribute $1 $3 $ ptrDeclr emptyDeclr (reverse $2)  }
+  | '*' type_qualifier_list
+  	{% withAttribute $1 [] $ ptrDeclr emptyDeclr (reverse $2)  }
 
   | '*' abstract_declarator
   	{% withNodeInfo $1 $ ptrDeclr $2 [] }
