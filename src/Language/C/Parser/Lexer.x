@@ -267,7 +267,6 @@ idkwtok ('_':'_':'a':'s':'m':[])           = tok CTokAsm
 idkwtok ('_':'_':'a':'s':'m':'_':'_':[])         = tok CTokAsm
 idkwtok ('a':'u':'t':'o':[])             = tok CTokAuto
 idkwtok ('b':'r':'e':'a':'k':[])           = tok CTokBreak
-idkwtok ('_':'B':'o':'o':'l':[])           = tok CTokBool
 idkwtok ('c':'a':'s':'e':[])             = tok CTokCase
 idkwtok ('c':'h':'a':'r':[])             = tok CTokChar
 idkwtok ('c':'o':'n':'s':'t':[])           = tok CTokConst
@@ -334,6 +333,7 @@ idkwtok ('_':'_':'b':'u':'i':'l':'t':'i':'n':'_':rest)
 idkwtok ('v':'e':'c':'2':[])             = tok CTokVec2
 idkwtok ('a':'t':'t':'r':'i':'b':'u':'t':'e':[])    = tok CTokAttribute
 idkwtok ('u':'n':'i':'f':'o':'r':'m':[])    = tok CTokUniform
+idkwtok ('b':'o':'o':'l':[])    = tok CTokBool
 
 
 

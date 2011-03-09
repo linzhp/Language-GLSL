@@ -185,7 +185,6 @@ alignof		{ CTokAlignof	_ }
 asm		{ CTokAsm	_ }
 auto		{ CTokAuto	_ }
 break		{ CTokBreak	_ }
-"_Bool"		{ CTokBool	_ }
 case		{ CTokCase	_ }
 char		{ CTokChar	_ }
 const		{ CTokConst	_ }
@@ -240,6 +239,7 @@ tyident		{ CTokTyIdent _ $$ }		-- `typedef-name' identifier
 vec2		{CTokVec2	_}
 attribute   {CTokAttribute _}
 uniform     {CTokUniform   _}
+bool        {CTokBool   _}
 
 %%
 
@@ -800,9 +800,9 @@ basic_type_name
   | float			{% withNodeInfo $1 $ CFloatType }
   | double			{% withNodeInfo $1 $ CDoubleType }
   | signed			{% withNodeInfo $1 $ CSignedType }
-  | "_Bool"			{% withNodeInfo $1 $ CBoolType }
   | "_Complex"			{% withNodeInfo $1 $ CComplexType }
   | vec2			{% withNodeInfo $1 $ CVec2Type }
+  | bool            {% withNodeInfo $1 $ CBoolType }
 
 
 -- A mixture of type qualifiers, storage class and basic type names in any

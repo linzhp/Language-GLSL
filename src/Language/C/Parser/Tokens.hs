@@ -76,7 +76,6 @@ data CToken = CTokLParen   !Position            -- `('
                                                 -- `__asm__')
             | CTokAuto     !Position            -- `auto'
             | CTokBreak    !Position            -- `break'
-            | CTokBool     !Position            -- `_Bool'
             | CTokCase     !Position            -- `case'
             | CTokChar     !Position            -- `char'
             | CTokConst    !Position            -- `const'
@@ -138,6 +137,7 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokVec2	   !Position            -- `vec2'
             | CTokAttribute !Position          -- `attribute'
             | CTokUniform   !Position           -- `uniform'
+            | CTokBool      !Position           -- `bool'
 
 -- special tokens used in GNU C extensions to ANSI C
 --
@@ -247,9 +247,10 @@ instance Pos CToken where
   posOf (CTokTyIdent  pos _) = pos
   posOf (CTokGnuC   _ pos  ) = pos
   posOf CTokEof = error "tokenPos: Eof"
-  posOf (CTokVec2      pos  ) = pos
+  posOf (CTokVec2     pos  ) = pos
   posOf (CTokAttribute pos  ) = pos
-  posOf (CTokUniform   pos  ) = pos
+  posOf (CTokUniform  pos  ) = pos
+  posOf (CTokBool     pos  ) = pos
 instance Show CToken where
   showsPrec _ (CTokLParen   _  ) = showString "("
   showsPrec _ (CTokRParen   _  ) = showString ")"
@@ -352,7 +353,7 @@ instance Show CToken where
   showsPrec _ (CTokGnuC GnuCOffsetof _) = showString "__builtin_offsetof"
   showsPrec _ (CTokGnuC GnuCTyCompat _) = showString "__builtin_types_compatible_p"
   showsPrec _ CTokEof = error "show CToken : CTokEof"
-  showsPrec _ (CTokVec2      _  ) = showString "vec2"
+  showsPrec _ (CTokVec2     _  ) = showString "vec2"
   showsPrec _ (CTokAttribute    _  ) = showString "attribute"
-  showsPrec _ (CTokUniform      _  ) = showString "uniform"
-
+  showsPrec _ (CTokUniform  _  ) = showString "uniform"
+  showsPrec _ (CTokBool     _  ) = showString "bool"
