@@ -219,7 +219,6 @@ typedef		{ CTokTypedef	_ }
 typeof		{ CTokTypeof	_ }
 "__thread"	{ CTokThread	_ }
 union		{ CTokUnion	_ }
-unsigned	{ CTokUnsigned	_ }
 void		{ CTokVoid	_ }
 volatile	{ CTokVolatile	_ }
 while		{ CTokWhile	_ }
@@ -801,7 +800,6 @@ basic_type_name
   | float			{% withNodeInfo $1 $ CFloatType }
   | double			{% withNodeInfo $1 $ CDoubleType }
   | signed			{% withNodeInfo $1 $ CSignedType }
-  | unsigned			{% withNodeInfo $1 $ CUnsigType }
   | "_Bool"			{% withNodeInfo $1 $ CBoolType }
   | "_Complex"			{% withNodeInfo $1 $ CComplexType }
   | vec2			{% withNodeInfo $1 $ CVec2Type }

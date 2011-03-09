@@ -119,7 +119,6 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokTypeof   !Position            -- `typeof'
             | CTokThread   !Position            -- `__thread'
             | CTokUnion    !Position            -- `union'
-            | CTokUnsigned !Position            -- `unsigned'
             | CTokVoid     !Position            -- `void'
             | CTokVolatile !Position            -- `volatile'
                                                 -- (or `__volatile',
@@ -237,7 +236,6 @@ instance Pos CToken where
   posOf (CTokTypeof   pos  ) = pos
   posOf (CTokThread   pos  ) = pos
   posOf (CTokUnion    pos  ) = pos
-  posOf (CTokUnsigned pos  ) = pos
   posOf (CTokVoid     pos  ) = pos
   posOf (CTokVolatile pos  ) = pos
   posOf (CTokWhile    pos  ) = pos
@@ -337,7 +335,6 @@ instance Show CToken where
   showsPrec _ (CTokTypeof   _  ) = showString "typeof"
   showsPrec _ (CTokThread   _  ) = showString "__thread"
   showsPrec _ (CTokUnion    _  ) = showString "union"
-  showsPrec _ (CTokUnsigned _  ) = showString "unsigned"
   showsPrec _ (CTokVoid     _  ) = showString "void"
   showsPrec _ (CTokVolatile _  ) = showString "volatile"
   showsPrec _ (CTokWhile    _  ) = showString "while"

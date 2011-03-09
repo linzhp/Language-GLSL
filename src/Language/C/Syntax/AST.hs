@@ -326,7 +326,6 @@ data CTypeSpec = CVoidType    NodeInfo
                | CFloatType   NodeInfo
                | CDoubleType  NodeInfo
                | CSignedType  NodeInfo
-               | CUnsigType   NodeInfo
                | CBoolType    NodeInfo
                | CComplexType NodeInfo
                | CSUType      CStructUnion NodeInfo  -- ^ Struct or Union specifier
@@ -651,7 +650,6 @@ instance CNode CTypeSpec
           nodeInfo (CFloatType nodeinfo) = nodeinfo
           nodeInfo (CDoubleType nodeinfo) = nodeinfo
           nodeInfo (CSignedType nodeinfo) = nodeinfo
-          nodeInfo (CUnsigType nodeinfo) = nodeinfo
           nodeInfo (CBoolType nodeinfo) = nodeinfo
           nodeInfo (CComplexType nodeinfo) = nodeinfo
           nodeInfo (CSUType _ nodeinfo) = nodeinfo

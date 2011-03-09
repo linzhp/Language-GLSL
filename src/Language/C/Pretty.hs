@@ -235,7 +235,6 @@ instance Pretty CTypeSpec where
     pretty (CFloatType _)       = text "float"
     pretty (CDoubleType _)      = text "double"
     pretty (CSignedType _)      = text "signed"
-    pretty (CUnsigType _)       = text "unsigned"
     pretty (CBoolType _)        = text "_Bool"
     pretty (CComplexType _)     = text "_Complex"
     pretty (CSUType union _)    = pretty union
