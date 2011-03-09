@@ -240,6 +240,7 @@ tyident		{ CTokTyIdent _ $$ }		-- `typedef-name' identifier
 
 vec2		{CTokVec2	_}
 attribute   {CTokAttribute _}
+uniform     {CTokUniform   _}
 
 %%
 
@@ -536,7 +537,7 @@ sides doesn't matter.
 ---------------------------------------------------------------------------------------------------------------
 attr                       :-   __attribute__((..))
 storage_class              :-   typedef | extern | static | auto | register | __thread
-type_qualifier             :-   const | volatile | restrict | inline | highp | attribute
+type_qualifier             :-   const | volatile | restrict | inline | highp | attribute | uniform
 type_qualifier_list        :-   type_qualifier+
 
 declaration_qualifier      :-   storage_class | type_qualifier
@@ -1104,8 +1105,9 @@ type_qualifier
   | inline		{% withNodeInfo $1 $ CInlineQual }
   | highp               {% withNodeInfo $1 $ CHighpQual }
   | attribute		{% withNodeInfo $1 $ CAttributeQual }
+  | uniform     {% withNodeInfo $1 $ CUniformQual }
 
--- a list containing at least one type_qualifier (const, volatile, restrict, inline, highp, attribute)
+-- a list containing at least one type_qualifier (const, volatile, restrict, inline, highp, attribute, uniform)
 --    and additionally CAttrs
 type_qualifier_list :: { Reversed [CTypeQual] }
 type_qualifier_list

@@ -138,6 +138,7 @@ data CToken = CTokLParen   !Position            -- `('
 	      -- tokens in GLSL
             | CTokVec2	   !Position            -- `vec2'
             | CTokAttribute !Position          -- `attribute'
+            | CTokUniform   !Position           -- `uniform'
 
 -- special tokens used in GNU C extensions to ANSI C
 --
@@ -250,6 +251,7 @@ instance Pos CToken where
   posOf CTokEof = error "tokenPos: Eof"
   posOf (CTokVec2      pos  ) = pos
   posOf (CTokAttribute pos  ) = pos
+  posOf (CTokUniform   pos  ) = pos
 instance Show CToken where
   showsPrec _ (CTokLParen   _  ) = showString "("
   showsPrec _ (CTokRParen   _  ) = showString ")"
@@ -355,4 +357,5 @@ instance Show CToken where
   showsPrec _ CTokEof = error "show CToken : CTokEof"
   showsPrec _ (CTokVec2      _  ) = showString "vec2"
   showsPrec _ (CTokAttribute    _  ) = showString "attribute"
+  showsPrec _ (CTokUniform      _  ) = showString "uniform"
 
