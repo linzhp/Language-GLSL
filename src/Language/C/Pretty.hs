@@ -238,7 +238,6 @@ instance Pretty CTypeSpec where
     pretty (CBoolType _)        = text "bool"
     pretty (CComplexType _)     = text "_Complex"
     pretty (CSUType union _)    = pretty union
-    pretty (CEnumType enum _)   = pretty enum
     pretty (CTypeDef ident _)   = identP ident
     pretty (CTypeOfExpr expr _) =
         text "typeof" <> text "(" <> pretty expr <> text ")"
@@ -267,14 +266,6 @@ instance Pretty CStructUnion where
 
 instance Pretty CStructTag where
     pretty CStructTag = text "struct"
-
-instance Pretty CEnum where
-    pretty (CEnum enum_ident Nothing cattrs _) = text "enum" <+> attrlistP cattrs <+> maybeP identP enum_ident
-    pretty (CEnum enum_ident (Just vals) cattrs _) = vcat [
-        text "enum" <+> attrlistP cattrs <+> maybeP identP enum_ident <+> text "{",
-        ii $ sep (punctuate comma (map p vals)),
-        text "}"] where
-        p (ident, expr) = identP ident <+> maybeP ((text "=" <+>) . pretty) expr
 
 --  Analyze a declarator and return a human-readable description
 --   See C99 Spec p 115ff.

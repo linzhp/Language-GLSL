@@ -27,7 +27,7 @@ module Language.C.Syntax.AST (
   CTranslUnit(..),  CExtDecl(..),
   -- * Declarations
   CFunDef(..),  CDecl(..),
-  CStructUnion(..),  CStructTag(..), CEnum(..),
+  CStructUnion(..),  CStructTag(..),
   -- * Declaration attributes
   CDeclSpec(..), partitionDeclSpecs,
   CStorageSpec(..), CTypeSpec(..), isSUEDef, CTypeQual(..), CAttr(..),
@@ -329,7 +329,6 @@ data CTypeSpec = CVoidType    NodeInfo
                | CBoolType    NodeInfo
                | CComplexType NodeInfo
                | CSUType      CStructUnion NodeInfo  -- ^ Struct or Union specifier
-               | CEnumType    CEnum        NodeInfo  -- ^ Enumeration specifier
                | CTypeDef     Ident        NodeInfo  -- ^ Typedef name
                | CTypeOfExpr  CExpr        NodeInfo  -- ^ @typeof(expr)@
                | CTypeOfType  CDecl        NodeInfo  -- ^ @typeof(type)@
@@ -339,7 +338,6 @@ data CTypeSpec = CVoidType    NodeInfo
 -- | returns @True@ if the given typespec is a struct, union or enum /definition/
 isSUEDef :: CTypeSpec -> Bool
 isSUEDef (CSUType (CStruct _ _ (Just _) _ _) _) = True
-isSUEDef (CEnumType (CEnum _ (Just _) _ _) _) = True
 isSUEDef _ = False
 
 -- | C type qualifiers (K&R A8.2, C99 6.7.3), function specifiers (C99 6.7.4), and attributes.
@@ -375,28 +373,7 @@ data CStructUnion = CStruct CStructTag
 
 -- | A tag to determine wheter we refer to a @struct@ or @union@, see 'CStructUnion'.
 data CStructTag = CStructTag
-                | CUnionTag
                 deriving (Eq,Data,Typeable)
-
--- | C enumeration specifier (K&R A8.4, C99 6.7.2.2)
---
--- @CEnum identifier enumerator-list attrs@ represent as enum specifier
---
---  * Either the identifier or the enumerator-list (or both) have to be present.
---
---  * If @enumerator-list@ is present, it has to be non-empty.
---
---  * The enumerator list is of the form @(enumeration-constant, enumeration-value?)@, where the latter
---    is an optional constant integral expression.
---
---  * @attrs@ is a list of @__attribute__@ annotations associated with the enumeration specifier
-data CEnum = CEnum (Maybe Ident)
-                   (Maybe [(Ident,             -- variant name
-                            Maybe CExpr)])     -- explicit variant value
-                   [CAttr]                     -- __attribute__s
-                   NodeInfo
-             deriving (Data,Typeable {-! CNode !-})
-
 
 -- | C initialization (K&R A8.7, C99 6.7.8)
 --
@@ -653,7 +630,6 @@ instance CNode CTypeSpec
           nodeInfo (CBoolType nodeinfo) = nodeinfo
           nodeInfo (CComplexType nodeinfo) = nodeinfo
           nodeInfo (CSUType _ nodeinfo) = nodeinfo
-          nodeInfo (CEnumType _ nodeinfo) = nodeinfo
           nodeInfo (CTypeDef _ nodeinfo) = nodeinfo
           nodeInfo (CTypeOfExpr _ nodeinfo) = nodeinfo
           nodeInfo (CTypeOfType _ nodeinfo) = nodeinfo
@@ -677,11 +653,6 @@ instance Pos CTypeQual
 instance CNode CStructUnion
     where nodeInfo (CStruct _ _ _ _ nodeinfo) = nodeinfo
 instance Pos CStructUnion
-    where posOf x = posOfNode (nodeInfo x)
-
-instance CNode CEnum
-    where nodeInfo (CEnum _ _ _ nodeinfo) = nodeinfo
-instance Pos CEnum
     where posOf x = posOfNode (nodeInfo x)
 
 instance CNode CInit

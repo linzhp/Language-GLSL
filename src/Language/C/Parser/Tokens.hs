@@ -86,7 +86,6 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokDo       !Position            -- `do'
             | CTokDouble   !Position            -- `double'
             | CTokElse     !Position            -- `else'
-            | CTokEnum     !Position            -- `enum'
             | CTokExtern   !Position            -- `extern'
             | CTokFloat    !Position            -- `float'
             | CTokFor      !Position            -- `for'
@@ -211,7 +210,6 @@ instance Pos CToken where
   posOf (CTokDo       pos  ) = pos
   posOf (CTokDouble   pos  ) = pos
   posOf (CTokElse     pos  ) = pos
-  posOf (CTokEnum     pos  ) = pos
   posOf (CTokExtern   pos  ) = pos
   posOf (CTokFloat    pos  ) = pos
   posOf (CTokFor      pos  ) = pos
@@ -299,7 +297,6 @@ instance Show CToken where
   showsPrec _ (CTokAlignof  _  ) = showString "alignof"
   showsPrec _ (CTokAsm      _  ) = showString "asm"
   showsPrec _ (CTokAuto     _  ) = showString "auto"
-  showsPrec _ (CTokBool _)       = showString "_Bool"
   showsPrec _ (CTokBreak    _  ) = showString "break"
   showsPrec _ (CTokCase     _  ) = showString "case"
   showsPrec _ (CTokChar     _  ) = showString "char"
@@ -310,7 +307,6 @@ instance Show CToken where
   showsPrec _ (CTokDouble   _  ) = showString "double"
   showsPrec _ (CTokDo       _  ) = showString "do"
   showsPrec _ (CTokElse     _  ) = showString "else"
-  showsPrec _ (CTokEnum     _  ) = showString "enum"
   showsPrec _ (CTokExtern   _  ) = showString "extern"
   showsPrec _ (CTokFloat    _  ) = showString "float"
   showsPrec _ (CTokFor      _  ) = showString "for"

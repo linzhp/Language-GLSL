@@ -194,7 +194,6 @@ default		{ CTokDefault	_ }
 do		{ CTokDo	_ }
 double		{ CTokDouble	_ }
 else		{ CTokElse	_ }
-enum		{ CTokEnum	_ }
 extern		{ CTokExtern	_ }
 float		{ CTokFloat	_ }
 for		{ CTokFor	_ }
@@ -953,7 +952,6 @@ typedef_type_specifier
 elaborated_type_name :: { CTypeSpec }
 elaborated_type_name
   : struct_or_union_specifier	{% withNodeInfo $1 $ CSUType $1 }
-  | enum_specifier		{% withNodeInfo $1 $ CEnumType $1 }
 
 
 -- parse C structure or union declaration (C99 6.7.2.1)
@@ -1056,40 +1054,6 @@ struct_identifier_declarator
   : identifier_declarator				{ (Just (reverseDeclr $1), Nothing) }
   | ':' constant_expression				{ (Nothing, Just $2) }
   | identifier_declarator ':' constant_expression	{ (Just (reverseDeclr $1), Just $3) }
-
--- parse C enumeration declaration (C99 6.7.2.2)
---
--- * Summary:
---   enum (identifier? '{' ... '}' | identifier)
---
-enum_specifier :: { CEnum }
-enum_specifier
-  : enum '{' enumerator_list '}'
-  	{% withNodeInfo $1 $ CEnum Nothing   (Just$ reverse $3) [] }
-
-  | enum '{' enumerator_list ',' '}'
-  	{% withNodeInfo $1 $ CEnum Nothing   (Just$ reverse $3) [] }
-
-  | enum identifier '{' enumerator_list '}'
-  	{% withNodeInfo $1 $ CEnum (Just $2) (Just$ reverse $4) [] }
-
-  | enum identifier '{' enumerator_list ',' '}'
-  	{% withNodeInfo $1 $ CEnum (Just $2) (Just$ reverse $4) [] }
-
-  | enum identifier
-  	{% withNodeInfo $1 $ CEnum (Just $2) Nothing []           }
-
-enumerator_list :: { Reversed [(Ident, Maybe CExpr)] }
-enumerator_list
-  : enumerator					{ singleton $1 }
-  | enumerator_list ',' enumerator		{ $1 `snoc` $3 }
-
-
-enumerator :: { (Ident, Maybe CExpr) }
-enumerator
-  : identifier					{ ($1, Nothing) }
-  | identifier '=' constant_expression		{ ($1, Just $3) }
-
 
 -- parse C type qualifier (C99 6.7.3)
 --
@@ -2011,8 +1975,6 @@ addTrailingAttrs declspecs new_attrs =
     case viewr declspecs of
         (specs_init, CTypeSpec (CSUType (CStruct tag name (Just def) def_attrs su_node) node))
             -> (specs_init `snoc` CTypeSpec (CSUType (CStruct tag name (Just def) (def_attrs ++ new_attrs) su_node) node))
-        (specs_init, CTypeSpec (CEnumType (CEnum name (Just def) def_attrs e_node) node))
-            -> (specs_init `snoc` CTypeSpec (CEnumType (CEnum name (Just def) (def_attrs ++ new_attrs) e_node) node))
         _ -> declspecs `rappend` (liftCAttrs new_attrs)
 
 -- convenient instance, the position of a list of things is the position of

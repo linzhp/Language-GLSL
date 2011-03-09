@@ -279,7 +279,6 @@ idkwtok ('d':'e':'f':'a':'u':'l':'t':[])         = tok CTokDefault
 idkwtok ('d':'o':[])               = tok CTokDo
 idkwtok ('d':'o':'u':'b':'l':'e':[])           = tok CTokDouble
 idkwtok ('e':'l':'s':'e':[])             = tok CTokElse
-idkwtok ('e':'n':'u':'m':[])             = tok CTokEnum
 idkwtok ('e':'x':'t':'e':'r':'n':[])           = tok CTokExtern
 idkwtok ('f':'l':'o':'a':'t':[])           = tok CTokFloat
 idkwtok ('f':'o':'r':[])             = tok CTokFor
