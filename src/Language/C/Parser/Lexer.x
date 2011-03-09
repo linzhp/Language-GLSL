@@ -311,7 +311,6 @@ idkwtok ('t':'y':'p':'e':'o':'f':[])           = tok CTokTypeof
 idkwtok ('_':'_':'t':'y':'p':'e':'o':'f':[])         = tok CTokTypeof
 idkwtok ('_':'_':'t':'y':'p':'e':'o':'f':'_':'_':[])       = tok CTokTypeof
 idkwtok ('_':'_':'t':'h':'r':'e':'a':'d':[])         = tok CTokThread
-idkwtok ('u':'n':'i':'o':'n':[])           = tok CTokUnion
 idkwtok ('v':'o':'i':'d':[])             = tok CTokVoid
 idkwtok ('v':'o':'l':'a':'t':'i':'l':'e':[])         = tok CTokVolatile
 idkwtok ('_':'_':'v':'o':'l':'a':'t':'i':'l':'e':[])       = tok CTokVolatile

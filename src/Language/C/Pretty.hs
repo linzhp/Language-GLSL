@@ -267,7 +267,6 @@ instance Pretty CStructUnion where
 
 instance Pretty CStructTag where
     pretty CStructTag = text "struct"
-    pretty CUnionTag  = text "union"
 
 instance Pretty CEnum where
     pretty (CEnum enum_ident Nothing cattrs _) = text "enum" <+> attrlistP cattrs <+> maybeP identP enum_ident

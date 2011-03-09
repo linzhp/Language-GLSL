@@ -217,7 +217,6 @@ switch		{ CTokSwitch	_ }
 typedef		{ CTokTypedef	_ }
 typeof		{ CTokTypeof	_ }
 "__thread"	{ CTokThread	_ }
-union		{ CTokUnion	_ }
 void		{ CTokVoid	_ }
 volatile	{ CTokVolatile	_ }
 while		{ CTokWhile	_ }
@@ -977,7 +976,6 @@ struct_or_union_specifier
 struct_or_union :: { Located CStructTag }
 struct_or_union
   : struct			{ L CStructTag (posOf $1) }
-  | union			{ L CUnionTag (posOf $1) }
 
 
 struct_declaration_list :: { Reversed [CDecl] }
