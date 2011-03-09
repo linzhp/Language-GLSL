@@ -146,8 +146,6 @@ instance Pretty CStat where
                <> either (maybeP pretty) pretty for_init <> semi
                <+> maybeP pretty cond <> semi
                <+> maybeP pretty step <> text ")" $+$ prettyPrec (-1) stat
-    pretty (CGoto ident _) = ii $ text "goto" <+> identP ident <> semi
-    pretty (CGotoPtr expr _) = ii $ text "goto" <+> text "*" <+> prettyPrec 30 expr <> semi
     pretty (CCont _) = ii $ text "continue" <> semi
     pretty (CBreak _) = ii $ text "break" <> semi
     pretty (CReturn Nothing _) = ii $ text "return" <> semi

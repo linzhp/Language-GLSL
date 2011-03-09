@@ -89,7 +89,6 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokExtern   !Position            -- `extern'
             | CTokFloat    !Position            -- `float'
             | CTokFor      !Position            -- `for'
-            | CTokGoto     !Position            -- `goto'
             | CTokIf       !Position            -- `if'
             | CTokInline   !Position            -- `inline'
                                                 -- (or `__inline',
@@ -213,7 +212,6 @@ instance Pos CToken where
   posOf (CTokExtern   pos  ) = pos
   posOf (CTokFloat    pos  ) = pos
   posOf (CTokFor      pos  ) = pos
-  posOf (CTokGoto     pos  ) = pos
   posOf (CTokInt      pos  ) = pos
   posOf (CTokInline   pos  ) = pos
   posOf (CTokIf       pos  ) = pos
@@ -310,7 +308,6 @@ instance Show CToken where
   showsPrec _ (CTokExtern   _  ) = showString "extern"
   showsPrec _ (CTokFloat    _  ) = showString "float"
   showsPrec _ (CTokFor      _  ) = showString "for"
-  showsPrec _ (CTokGoto     _  ) = showString "goto"
   showsPrec _ (CTokIf       _  ) = showString "if"
   showsPrec _ (CTokInline   _  ) = showString "inline"
   showsPrec _ (CTokInt      _  ) = showString "int"

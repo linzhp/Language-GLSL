@@ -230,8 +230,6 @@ data CStat = CLabel  Ident CStat [CAttr] NodeInfo  -- ^ An (attributed) label fo
                   NodeInfo
            -- ^ for statement @CFor init expr-2 expr-3 stmt@, where @init@ is either a declaration or
            -- initializing expression
-           | CGoto Ident NodeInfo            -- ^ goto statement @CGoto label@
-           | CGotoPtr CExpr NodeInfo         -- ^ computed goto @CGotoPtr labelExpr@
            | CCont NodeInfo                  -- ^ continue statement
            | CBreak    NodeInfo              -- ^ break statement
            | CReturn (Maybe CExpr)NodeInfo   -- ^ return statement @CReturn returnExpr@
@@ -575,8 +573,6 @@ instance CNode CStat
           nodeInfo (CSwitch _ _ nodeinfo) = nodeinfo
           nodeInfo (CWhile _ _ _ nodeinfo) = nodeinfo
           nodeInfo (CFor _ _ _ _ nodeinfo) = nodeinfo
-          nodeInfo (CGoto _ nodeinfo) = nodeinfo
-          nodeInfo (CGotoPtr _ nodeinfo) = nodeinfo
           nodeInfo (CCont nodeinfo) = nodeinfo
           nodeInfo (CBreak nodeinfo) = nodeinfo
           nodeInfo (CReturn _ nodeinfo) = nodeinfo

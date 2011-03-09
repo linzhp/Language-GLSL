@@ -197,7 +197,6 @@ else		{ CTokElse	_ }
 extern		{ CTokExtern	_ }
 float		{ CTokFloat	_ }
 for		{ CTokFor	_ }
-goto		{ CTokGoto	_ }
 if		{ CTokIf	_ }
 inline		{ CTokInline	_ }
 int		{ CTokInt	_ }
@@ -463,9 +462,7 @@ iteration_statement
 --
 jump_statement :: { CStat }
 jump_statement
-  : goto identifier ';'			{% withNodeInfo $1 $ CGoto $2 }
-  | goto '*' expression ';'		{% withNodeInfo $1 $ CGotoPtr $3 }
-  | continue ';'			{% withNodeInfo $1 $ CCont }
+  : continue ';'			{% withNodeInfo $1 $ CCont }
   | break ';'				{% withNodeInfo $1 $ CBreak }
   | return expression_opt ';'		{% withNodeInfo $1 $ CReturn $2 }
 
