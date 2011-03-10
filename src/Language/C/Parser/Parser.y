@@ -240,6 +240,7 @@ attribute   {CTokAttribute _}
 uniform     {CTokUniform   _}
 bool        {CTokBool   _}
 mediump     {CTokMediump    _}
+varying     {CTokVarying    _}
 
 %%
 
@@ -534,7 +535,7 @@ sides doesn't matter.
 ---------------------------------------------------------------------------------------------------------------
 attr                       :-   __attribute__((..))
 storage_class              :-   typedef | extern | static | auto | register | __thread
-type_qualifier             :-   const | volatile | restrict | inline | highp | mediump | attribute | uniform
+type_qualifier             :-   const | volatile | restrict | inline | highp | mediump | attribute | uniform | varying
 type_qualifier_list        :-   type_qualifier+
 
 declaration_qualifier      :-   storage_class | type_qualifier
@@ -1069,8 +1070,9 @@ type_qualifier
   | mediump             {% withNodeInfo $1 $ CMediumpQual }
   | attribute		{% withNodeInfo $1 $ CAttributeQual }
   | uniform     {% withNodeInfo $1 $ CUniformQual }
+  | varying             {% withNodeInfo $1 $ CVaryingQual}
 
--- a list containing at least one type_qualifier (const, volatile, restrict, inline, highp, attribute, uniform)
+-- a list containing at least one type_qualifier (const, volatile, restrict, inline, highp, mediump, attribute, uniform, varying)
 --    and additionally CAttrs
 type_qualifier_list :: { Reversed [CTypeQual] }
 type_qualifier_list

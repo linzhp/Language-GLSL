@@ -353,6 +353,7 @@ data CTypeQual = CConstQual NodeInfo
                | CAttributeQual NodeInfo
                | CUniformQual NodeInfo
                | CMediumpQual NodeInfo
+               | CVaryingQual NodeInfo
                deriving (Data,Typeable {-! CNode !-})
 
 -- | C structure or union specifiers (K&R A8.3, C99 6.7.2.1)
@@ -648,6 +649,7 @@ instance CNode CTypeQual
           nodeInfo (CAttributeQual nodeinfo) = nodeinfo
           nodeInfo (CUniformQual nodeinfo) = nodeinfo
           nodeInfo (CMediumpQual nodeinfo) = nodeinfo
+          nodeInfo (CVaryingQual nodeinfo) = nodeinfo
 
 instance Pos CTypeQual
     where posOf x = posOfNode (nodeInfo x)

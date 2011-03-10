@@ -138,6 +138,7 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokUniform   !Position           -- `uniform'
             | CTokBool      !Position           -- `bool'
             | CTokMediump   !Position           -- `mediump'
+            | CTokVarying   !Position           -- `varying'
 
 -- special tokens used in GNU C extensions to ANSI C
 --
@@ -251,6 +252,7 @@ instance Pos CToken where
   posOf (CTokUniform  pos  ) = pos
   posOf (CTokBool     pos  ) = pos
   posOf (CTokMediump  pos  ) = pos
+  posOf (CTokVarying  pos  ) = pos
 instance Show CToken where
   showsPrec _ (CTokLParen   _  ) = showString "("
   showsPrec _ (CTokRParen   _  ) = showString ")"
@@ -354,5 +356,6 @@ instance Show CToken where
   showsPrec _ (CTokVec4     _  ) = showString "vec4"
   showsPrec _ (CTokAttribute    _  ) = showString "attribute"
   showsPrec _ (CTokUniform  _  ) = showString "uniform"
+  showsPrec _ (CTokVarying  _  ) = showString "varying"
   showsPrec _ (CTokBool     _  ) = showString "bool"
   showsPrec _ (CTokMediump  _  ) = showString "mediump"

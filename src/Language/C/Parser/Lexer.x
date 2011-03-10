@@ -334,6 +334,7 @@ idkwtok ('a':'t':'t':'r':'i':'b':'u':'t':'e':[])    = tok CTokAttribute
 idkwtok ('u':'n':'i':'f':'o':'r':'m':[])    = tok CTokUniform
 idkwtok ('b':'o':'o':'l':[])    = tok CTokBool
 idkwtok ('m':'e':'d':'i':'u':'m':'p':[])    = tok CTokMediump
+idkwtok ('v':'a':'r':'y':'i':'n':'g':[])    = tok CTokVarying
 
 
 
