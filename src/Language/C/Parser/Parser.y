@@ -242,7 +242,7 @@ mediump     {CTokMediump    _}
 %%
 
 
--- parse a complete C translation unit
+-- parse a complete C translation unit.
 --
 translation_unit :: { CTranslUnit }
 translation_unit
