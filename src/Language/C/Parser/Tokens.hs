@@ -132,6 +132,8 @@ data CToken = CTokLParen   !Position            -- `('
             | CTokEof                           -- end of file
 	      -- tokens in GLSL
             | CTokVec2	   !Position            -- `vec2'
+            | CTokVec3	   !Position            -- `vec3'
+            | CTokVec4	   !Position            -- `vec4'
             | CTokAttribute !Position          -- `attribute'
             | CTokUniform   !Position           -- `uniform'
             | CTokBool      !Position           -- `bool'
@@ -243,6 +245,8 @@ instance Pos CToken where
   posOf (CTokGnuC   _ pos  ) = pos
   posOf CTokEof = error "tokenPos: Eof"
   posOf (CTokVec2     pos  ) = pos
+  posOf (CTokVec3     pos  ) = pos
+  posOf (CTokVec4     pos  ) = pos
   posOf (CTokAttribute pos  ) = pos
   posOf (CTokUniform  pos  ) = pos
   posOf (CTokBool     pos  ) = pos
@@ -346,6 +350,8 @@ instance Show CToken where
   showsPrec _ (CTokGnuC GnuCTyCompat _) = showString "__builtin_types_compatible_p"
   showsPrec _ CTokEof = error "show CToken : CTokEof"
   showsPrec _ (CTokVec2     _  ) = showString "vec2"
+  showsPrec _ (CTokVec3     _  ) = showString "vec3"
+  showsPrec _ (CTokVec4     _  ) = showString "vec4"
   showsPrec _ (CTokAttribute    _  ) = showString "attribute"
   showsPrec _ (CTokUniform  _  ) = showString "uniform"
   showsPrec _ (CTokBool     _  ) = showString "bool"

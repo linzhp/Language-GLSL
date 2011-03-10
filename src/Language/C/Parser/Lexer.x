@@ -328,6 +328,8 @@ idkwtok ('_':'_':'b':'u':'i':'l':'t':'i':'n':'_':rest)
         | rest == "types_compatible_p" = tok (CTokGnuC GnuCTyCompat)
 
 idkwtok ('v':'e':'c':'2':[])             = tok CTokVec2
+idkwtok ('v':'e':'c':'3':[])             = tok CTokVec3
+idkwtok ('v':'e':'c':'4':[])             = tok CTokVec4
 idkwtok ('a':'t':'t':'r':'i':'b':'u':'t':'e':[])    = tok CTokAttribute
 idkwtok ('u':'n':'i':'f':'o':'r':'m':[])    = tok CTokUniform
 idkwtok ('b':'o':'o':'l':[])    = tok CTokBool

@@ -234,6 +234,8 @@ tyident		{ CTokTyIdent _ $$ }		-- `typedef-name' identifier
 "__builtin_types_compatible_p"	{ CTokGnuC GnuCTyCompat _ }
 
 vec2		{CTokVec2	_}
+vec3		{CTokVec3	_}
+vec4		{CTokVec4	_}
 attribute   {CTokAttribute _}
 uniform     {CTokUniform   _}
 bool        {CTokBool   _}
@@ -798,6 +800,8 @@ basic_type_name
   | signed			{% withNodeInfo $1 $ CSignedType }
   | "_Complex"			{% withNodeInfo $1 $ CComplexType }
   | vec2			{% withNodeInfo $1 $ CVec2Type }
+  | vec3			{% withNodeInfo $1 $ CVec3Type }
+  | vec4			{% withNodeInfo $1 $ CVec4Type }
   | bool            {% withNodeInfo $1 $ CBoolType }
 
 

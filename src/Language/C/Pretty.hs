@@ -242,6 +242,8 @@ instance Pretty CTypeSpec where
     pretty (CTypeOfType decl _) =
         text "typeof" <> text "(" <> pretty decl <> text ")"
     pretty (CVec2Type _)         = text "vec2"
+    pretty (CVec3Type _)         = text "vec3"
+    pretty (CVec4Type _)         = text "vec4"
 
 instance Pretty CTypeQual where
     pretty (CConstQual _) = text "const"
