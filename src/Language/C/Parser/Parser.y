@@ -237,6 +237,7 @@ vec2		{CTokVec2	_}
 attribute   {CTokAttribute _}
 uniform     {CTokUniform   _}
 bool        {CTokBool   _}
+mediump     {CTokMediump    _}
 
 %%
 
@@ -531,7 +532,7 @@ sides doesn't matter.
 ---------------------------------------------------------------------------------------------------------------
 attr                       :-   __attribute__((..))
 storage_class              :-   typedef | extern | static | auto | register | __thread
-type_qualifier             :-   const | volatile | restrict | inline | highp | attribute | uniform
+type_qualifier             :-   const | volatile | restrict | inline | highp | mediump | attribute | uniform
 type_qualifier_list        :-   type_qualifier+
 
 declaration_qualifier      :-   storage_class | type_qualifier
@@ -1061,6 +1062,7 @@ type_qualifier
   | restrict		{% withNodeInfo $1 $ CRestrQual }
   | inline		{% withNodeInfo $1 $ CInlineQual }
   | highp               {% withNodeInfo $1 $ CHighpQual }
+  | mediump             {% withNodeInfo $1 $ CMediumpQual }
   | attribute		{% withNodeInfo $1 $ CAttributeQual }
   | uniform     {% withNodeInfo $1 $ CUniformQual }
 
